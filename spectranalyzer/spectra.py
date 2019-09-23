@@ -22,12 +22,14 @@ import re
 
 class Spectra():
     """ """
-    def __init__(self, title=None, ylabel=None, legend_title=None):
+    def __init__(self, title=None, ylabel=None, legend_title=None,
+            label_fun=None):
         self.title = title
         self.ylabel = ylabel
         self.legend_title = legend_title
         self.data = None
         self.normdata = None
+        self.label_fun = label_fun
 
     @staticmethod
     def sanitize_columns(data, labels: list):
@@ -45,6 +47,10 @@ class Spectra():
         data.columns=labels
         return data
         
+
+    def label_column(self, string, fun):
+        return fun(string)
+
     def load_csv_data(self, wavelength: int, basedir=None, start=0., 
                       regex=None, encoding='iso-8859-1'):
         """Reads a series of fluorescence spectra from CSV files
@@ -67,9 +73,14 @@ class Spectra():
             i = 0
         for file in glob(f"{basedir}*{wavelength}.csv"):
             if regex is not None:
-                conc = float(re.findall(regex, file)[0])
-                conc = round(conc*22/(2000+conc),2)
-                if conc <= start:
+                conc = re.findall(regex, file)[0]
+                if self.label_fun is None:
+                    conc = float(conc)
+                    conc = round(conc*22/(2000+conc),2)
+                else:
+                    conc = self.label_fun(conc)
+
+                if type(conc) in (float, int) and conc <= start:
                     continue
             else:
                 i = i + 1
