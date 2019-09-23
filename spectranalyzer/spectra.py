@@ -26,6 +26,8 @@ class Spectra():
         self.title = title
         self.ylabel = ylabel
         self.legend_title = legend_title
+        self.data = None
+        self.normdata = None
 
     @staticmethod
     def sanitize_columns(data, labels: list):
@@ -140,15 +142,18 @@ class Spectra():
         self.data.plot(style=style)
         self.decorate_plot(style)
 
-    def decorate_plot(self, style=None):
+    def decorate_plot(self, ylabel=None, style=None):
         """Sets plot title, ylabel and legend title.
 
         :param style:  (Default value = None)
 
         """
-        plt.legend(title = self.legend_title)
+        plt.legend(title = self.legend_title, frameon='none', edgecolor='none')
         plt.title(self.title)
-        plt.ylabel(self.ylabel)
+        if ylabel is None:
+            ylabel = self.ylabel
+        plt.ylabel(ylabel)
+
 
     def normalize_data(self, fun=lambda x: x/max(x)):
         """Normalizes the data applying the specified lambda."""
@@ -160,8 +165,12 @@ class Spectra():
         :param style:  (Default value = None)
 
         """
-        self.normalize_data()
+        if self.normdata is None:
+            self.normalize_data()
+        
         self.normdata.plot(style=style)
+        self.decorate_plot(ylabel="Norm. intensity (a.u.)")
+        plt.ylim([0, 1])
 
     def plot_maxima(self, style=None):
         """Plots the maximum wavelength vs. column.
