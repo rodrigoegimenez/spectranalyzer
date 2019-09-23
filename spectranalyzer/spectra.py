@@ -61,12 +61,17 @@ class Spectra():
 
         self.data = pd.DataFrame()
         regex = regex
+        if regex is None:
+            i = 0
         for file in glob(f"{basedir}*{wavelength}.csv"):
             if regex is not None:
                 conc = float(re.findall(regex, file)[0])
                 conc = round(conc*22/(2000+conc),2)
                 if conc <= start:
                     continue
+            else:
+                i = i + 1
+                conc = i
             
             col = Spectra.sanitize_columns(pd.read_csv(file,encoding=encoding,index_col=0,header=1,
                                   usecols=[0,1]), [conc])
