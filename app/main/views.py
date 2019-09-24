@@ -10,8 +10,13 @@ from zipfile import ZipFile
 # from glob import glob
 
 
-@main.route('/', methods=['GET', 'POST'])
+@main.route('/')
 def index():
+    return render_template('index.html')
+
+
+@main.route('/sendfile', methods=['GET', 'POST'])
+def sendfile():
     form = NameForm()
     if form.validate_on_submit():
         print(form.filefield.data)
@@ -34,7 +39,7 @@ def index():
         url = url_for('static', filename=f"{fitter.name}.zip")
         return render_template('result.html', url=url)
         # f"<a href={url}>link</a>"  # redirect(url_for('.index'))
-    return render_template('index.html', form=form)
+    return render_template('sendfile.html', form=form)
 
 
 def zipdir(path, ziph):
