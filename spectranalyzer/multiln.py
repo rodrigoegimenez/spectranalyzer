@@ -4,18 +4,18 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # SpectrAnalyzer is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with SpectrAnalyzer.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-import matplotlib.pyplot as plt
 import pandas as pd
+
 
 class MultiLN():
     def __init__(self):
@@ -27,12 +27,12 @@ class MultiLN():
     def plot(self, x):
         self.create_dataframe(x)
         self.df.plot()
-    
+
     def find_by_name(self, name):
         for fun in self.lnfuns:
-            if fun.name.replace("-","") == name:
+            if fun.name.replace("-", "") == name:
                 return fun
-    
+
     def evaluate(self, x):
         self.create_dataframe(x)
         return np.asarray(self.df["Total"])
@@ -44,7 +44,5 @@ class MultiLN():
             y = lnfun.evaluate(x)
             total = total + y
             self.df[lnfun.name] = pd.Series(data=y, index=x)
-        self.df["Total"] = pd.Series(data = total, index=x)
+        self.df["Total"] = pd.Series(data=total, index=x)
         return self.df
-            
-    
