@@ -67,10 +67,10 @@ class LNFun():
         self.params[param].max = max
 
     def getpa(self):
-        # try:
-        vmax, vmin = self.params['vmin'].value, self.params['vmax'].value
-        # except KeyError:
-        #    vmax, vmin = self.get_vmax_vmin(self.params['vm'])
+        try:
+            vmax, vmin = self.params['vmin'].value, self.params['vmax'].value
+        except KeyError:
+            vmax, vmin = self.get_vmax_vmin(self.params['vm'])
         vm = self.params['vm'].value
         p = (10**7/vm-10**7/vmin)/(10**7/vmax-10**7/vm)
         a = 10**7/vm + ((10**7/vmax-10**7/vmin)*p)/(p**2-1)

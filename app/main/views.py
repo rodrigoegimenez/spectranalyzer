@@ -1,5 +1,4 @@
-from flask import render_template, session, redirect,\
-    url_for, flash, request
+from flask import render_template, url_for, request
 from werkzeug.utils import secure_filename
 from . import main
 from .forms import NameForm
@@ -8,7 +7,7 @@ import os
 # from ..models import User
 from spectranalyzer import LaurdanFitter
 from zipfile import ZipFile
-from glob import glob
+# from glob import glob
 
 
 @main.route('/', methods=['GET', 'POST'])
@@ -19,7 +18,9 @@ def index():
         print(form.fitter.data)
         print(request.files)
         f = form.filefield.data
-        filepath = f"{main.root_path}{os.path.sep}..{os.path.sep}static{os.path.sep}"
+        filepath = (
+            f"""{main.root_path}{os.path.sep}.."""
+            f"""{os.path.sep}static{os.path.sep}""")
         filename = f"{secure_filename(f.filename)}"
         f.save(f"{filepath}{filename}")
         os.chdir(filepath)
@@ -31,7 +32,8 @@ def index():
         zipfile.close()
         os.chdir("..")
         url = url_for('static', filename=f"{fitter.name}.zip")
-        return f"<a href={url}>link</a>" # redirect(url_for('.index'))
+        return render_template('result.html', url=url)
+        # f"<a href={url}>link</a>"  # redirect(url_for('.index'))
     return render_template('index.html', form=form)
 
 
