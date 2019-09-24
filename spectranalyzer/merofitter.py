@@ -41,12 +41,12 @@ class MeroFitter(Spectra):
             y0s.append(fun.params["y0"].value)
             areas.append(fun.calculate_area(x))
         areas = np.asarray(areas)
-        # totarea = areas.sum()
-        # areas = areas / totarea * 100
+        totarea = areas.sum()
+        areas = areas / totarea * 100
         equil = areas[1]/(areas[0])**2
         data = np.append(areas, [vms, y0s])
         data = np.append(data, [equil])
-        index = ["Relaxed", "NonRelaxed",
+        index = ["MonomerAgua", "DimerAgua",
                  "VmRelaxed", "VmNonRelaxed",
                  "y0Relaxed", "y0Nonrelaxed",
                  "Equil"]
@@ -65,14 +65,14 @@ class MeroFitter(Spectra):
 
         lnagua_monomero.set_param('y0', value=y0max/2., min=0., max=y0max)
         lnagua_monomero.set_param('vm', value=573, max=600, vary=False)
-        lnagua_monomero.set_param('vmin', value=540)
-        lnagua_monomero.set_param('vmax', value=590)
+        lnagua_monomero.set_param('vmin', value=554, vary=False)
+        lnagua_monomero.set_param('vmax', value=594, vary=False)
 
         lnagua_dimero.set_param('y0', value=y0max/2., min=0., max=y0max)
         lnagua_dimero.set_param('vm', value=612, min=580,
                                 max=625, vary=False)
-        lnagua_dimero.set_param('vmin', value=600)
-        lnagua_dimero.set_param('vmax', value=680)
+        lnagua_dimero.set_param('vmin', value=594, vary=False)
+        lnagua_dimero.set_param('vmax', value=640, vary=False)
 
         fitter.multiln.add_LN(lnagua_monomero)
         fitter.multiln.add_LN(lnagua_dimero)
@@ -122,8 +122,8 @@ class MeroFitter(Spectra):
 
         self.report.to_csv(f"{self.name}{os.path.sep}{self.name}-report.csv")
         if write_images:
-            self.write_report_graphic(["Relaxed", "NonRelaxed"],
-                                      "Contribution (%)", "Contributions")
+            self.write_report_graphic(["MonomerAgua", "DimerAgua"],
+                                      "Rel. Area (%)", "RelArea")
             self.write_report_graphic(["VmRelaxed", "VmNonRelaxed"],
                                       "Wavelength (nm)", "Vms")
             self.write_report_graphic(["y0Relaxed", "y0Nonrelaxed"],
