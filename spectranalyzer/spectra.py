@@ -37,7 +37,7 @@ class Spectra():
 
         :param data: pandas
         :param labels: list
-        :param labels: list: 
+        :param labels: list:
         :returns: pandas.DataFrame: Sanitized data
 
         """
@@ -46,12 +46,12 @@ class Spectra():
         data.index = pd.to_numeric(data.index)
         data.columns=labels
         return data
-        
+
 
     def label_column(self, string, fun):
         return fun(string)
 
-    def load_csv_data(self, wavelength: int, basedir=None, start=0., 
+    def load_csv_data(self, wavelength: int, basedir=None, start=0.,
                       regex=None, encoding='iso-8859-1'):
         """Reads a series of fluorescence spectra from CSV files
         (Exported from Cary Eclipse, for now.)
@@ -62,7 +62,7 @@ class Spectra():
         :param start: Which data should be dropped from importing (Default value = 0.)
         :param regex: Regular expression used to extract concentration (Default value = None)
         :param encodig: In which encoding is the file
-        :param wavelength: int: 
+        :param wavelength: int:
         :param encoding:  (Default value = 'iso-8859-1')
 
         """
@@ -85,7 +85,7 @@ class Spectra():
             else:
                 i = i + 1
                 conc = i
-            
+
             col = Spectra.sanitize_columns(pd.read_csv(file,encoding=encoding,index_col=0,header=1,
                                   usecols=[0,1]), [conc])
             self.data = pd.concat((self.data,col), axis=1)
@@ -96,8 +96,8 @@ class Spectra():
     def nearest(array, number):
         """Finds the position of the nearest number in array.
 
-        :param array: 
-        :param number: 
+        :param array:
+        :param number:
 
         """
         array = np.asarray(array)
@@ -106,23 +106,23 @@ class Spectra():
     def nearest_column(self, number):
         """Returns the column which is nearest to the specified number.
 
-        :param number: 
+        :param number:
 
         """
         return Spectra.nearest(self.data.columns, number)
-        
+
     def nearest_wavelength(self, wavelength):
         """Returns the wavelength which is nearest to the specified number.
 
-        :param wavelength: 
+        :param wavelength:
 
         """
         return Spectra.nearest(self.data.index, wavelength)
-        
+
     def plot_fixed_wavelength(self, wavelength, style=None):
         """Plots the specified number (nearest value).
 
-        :param wavelength: 
+        :param wavelength:
         :param style:  (Default value = None)
 
         """
@@ -136,7 +136,7 @@ class Spectra():
     def plot_fixed_column(self, number, style=None):
         """Plots the specified column (nearest value).
 
-        :param number: 
+        :param number:
         :param style:  (Default value = None)
 
         """
@@ -169,7 +169,7 @@ class Spectra():
     def normalize_data(self, fun=lambda x: x/max(x)):
         """Normalizes the data applying the specified lambda."""
         self.normdata = self.data.apply(fun)
-    
+
     def plot_normalized(self, style=None):
         """
 
@@ -178,7 +178,7 @@ class Spectra():
         """
         if self.normdata is None:
             self.normalize_data()
-        
+
         self.normdata.plot(style=style)
         self.decorate_plot(ylabel="Norm. intensity (a.u.)")
         plt.ylim([0, 1])

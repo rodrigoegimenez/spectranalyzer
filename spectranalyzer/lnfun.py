@@ -4,16 +4,16 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # SpectrAnalyzer is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with SpectrAnalyzer.  If not, see <https://www.gnu.org/licenses/>.
 
-from lmfit import minimize, Parameters
+from lmfit import Parameters
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import quad
@@ -21,11 +21,12 @@ from scipy.integrate import quad
 exp = np.exp
 log = np.log
 
+
 class LNFun():
     def __init__(self, params=None):
         self.p = None
         self.a = None
-        if params == None:
+        if params is None:
             self.params = Parameters()
         else:
             self.params = params
@@ -66,32 +67,31 @@ class LNFun():
         self.params[param].max = max
 
     def getpa(self):
-        try:
-            vmax, vmin = self.params['vmin'].value, self.params['vmax'].value
-        except:
-            vmax, vmin = self.get_vmax_vmin(self.params['vm'])
-        
+        # try:
+        vmax, vmin = self.params['vmin'].value, self.params['vmax'].value
+        # except KeyError:
+        #    vmax, vmin = self.get_vmax_vmin(self.params['vm'])
         vm = self.params['vm'].value
         p = (10**7/vm-10**7/vmin)/(10**7/vmax-10**7/vm)
         a = 10**7/vm + ((10**7/vmax-10**7/vmin)*p)/(p**2-1)
         return p, a
 
-    def lognpa(self,x,p,a):
+    def lognpa(self, x, p, a):
         y0 = self.params['y0'].value
         vm = self.params['vm'].value
-        y = y0*exp(-log(2)/(log(p))**2*(log((a-10**7/x)/(a-10**7/vm)))**2) 
+        y = y0*exp(-log(2)/(log(p))**2*(log((a-10**7/x)/(a-10**7/vm)))**2)
         if type(y) is np.ndarray:
             y[np.isnan(y)] = 0
         elif np.isnan(y):
             y = 0
         return y
 
-    def evaluate(self,x):
+    def evaluate(self, x):
         if (not self.p and not self.a):
             p, a = self.getpa()
         else:
             p, a = self.p, self.a
-        y = self.lognpa(x,p,a)
+        y = self.lognpa(x, p, a)
         self.y = y
         return y
 
@@ -105,5 +105,5 @@ class LNFun():
         plt.plot(x, y)
 
     def calculate_area(self, x):
-        area = quad(self.evaluate,x.min(),x.max(),args=())[0]
+        area = quad(self.evaluate, x.min(), x.max(), args=())[0]
         return area

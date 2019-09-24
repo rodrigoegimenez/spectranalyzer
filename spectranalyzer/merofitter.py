@@ -19,15 +19,20 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import os
-from .fitter import Fitter
+# from .fitter import Fitter
+from .spectra import Spectra
 
 
-class MeroFitter(Fitter):
-    def __init__(self, filename, xlabel=None):
-        super().__init__(filename, xlabel)
+class MeroFitter(Spectra):
+    def __init__(self, title=None, ylabel=None, legend_title=None,
+                 label_fun=None, xlabel=None):
+        super().__init__(title, ylabel, legend_title, label_fun)
+        self.name = "MeroFitter"
+        self.fits = []
+        self.xlabel = xlabel
 
     def create_column_report(self, fitter, colname):
-        x = np.asarray(self.df.index)
+        x = np.asarray(self.data.index)
         areas = []
         vms = []
         y0s = []
@@ -36,34 +41,41 @@ class MeroFitter(Fitter):
             y0s.append(fun.params["y0"].value)
             areas.append(fun.calculate_area(x))
         areas = np.asarray(areas)
-        totarea = areas.sum()
-        areas = areas / totarea * 100
-        deltas = (areas[1]-areas[0])/100
+        # totarea = areas.sum()
+        # areas = areas / totarea * 100
+        equil = areas[1]/(areas[0])**2
         data = np.append(areas, [vms, y0s])
-        data = np.append(data, [deltas])
+        data = np.append(data, [equil])
         index = ["Relaxed", "NonRelaxed",
                  "VmRelaxed", "VmNonRelaxed",
                  "y0Relaxed", "y0Nonrelaxed",
-                 "deltaS"]
+                 "Equil"]
         return pd.Series(data=data, index=index, name=colname)
 
     def fit_column(self, col, plot=False):
-        fitter = LNFitter(self.df[col], fittype="Mero")
+        fitter = LNFitter(self.data[col], fittype="Mero")
 
+        # Maximum cannot be more than, well, the maximum value.
         y0max = fitter.data.max().max()
-        lnrelaxed = LNFun()
-        lnrelaxed.name = "Relaxed"
-        lnnonrelaxed = LNFun()
-        lnnonrelaxed.name = "NonRelaxed"
 
-        lnrelaxed.set_param('y0', value=y0max/2., min=0., max=y0max)
-        lnrelaxed.set_param('vm', value=10**7/20000, min=10**7/21300)
-        lnnonrelaxed.set_param('y0', value=y0max/2., min=0., max=y0max)
-        lnnonrelaxed.set_param('vm', value=10**7/24000, max=10**7/22300,
-                               min=10**7/26000)
+        lnagua_monomero = LNFun()
+        lnagua_monomero.name = "MonomeroAgua"
+        lnagua_dimero = LNFun()
+        lnagua_dimero.name = "DimeroAgua"
 
-        fitter.multiln.add_LN(lnrelaxed)
-        fitter.multiln.add_LN(lnnonrelaxed)
+        lnagua_monomero.set_param('y0', value=y0max/2., min=0., max=y0max)
+        lnagua_monomero.set_param('vm', value=573, max=600, vary=False)
+        lnagua_monomero.set_param('vmin', value=540)
+        lnagua_monomero.set_param('vmax', value=590)
+
+        lnagua_dimero.set_param('y0', value=y0max/2., min=0., max=y0max)
+        lnagua_dimero.set_param('vm', value=612, min=580,
+                                max=625, vary=False)
+        lnagua_dimero.set_param('vmin', value=600)
+        lnagua_dimero.set_param('vmax', value=680)
+
+        fitter.multiln.add_LN(lnagua_monomero)
+        fitter.multiln.add_LN(lnagua_dimero)
 
         fitter.fit(plot=plot)
         if plot:
@@ -77,7 +89,7 @@ class MeroFitter(Fitter):
     def fit_all_columns(self, plot=False, export=False, write_images=False):
         self.report = pd.DataFrame()
 
-        for col in self.df.columns:
+        for col in self.data.columns:
             self.fit_column(col, plot)
 
         self.report = self.report.transpose()
@@ -93,7 +105,7 @@ class MeroFitter(Fitter):
             pass
 
         for fit in self.fits:
-            fit.multiln.create_dataframe(np.asarray(self.df.index))
+            fit.multiln.create_dataframe(np.asarray(self.data.index))
             data = pd.concat([fit.multiln.df, fit.data], axis=1)
             data.to_csv(f"{self.name}{os.path.sep}{fit.data.name}.csv")
             data.plot()
@@ -116,8 +128,8 @@ class MeroFitter(Fitter):
                                       "Wavelength (nm)", "Vms")
             self.write_report_graphic(["y0Relaxed", "y0Nonrelaxed"],
                                       "Max Intensity (a.u)", "y0s")
-            self.write_report_graphic(["deltaS"], "DeltaS (a.u.)",
-                                      "DeltaS")
+            self.write_report_graphic(["Equil"], "Equil (a.u.)",
+                                      "Equil")
 
             if not plot:
                 plt.close('all')
@@ -126,4 +138,6 @@ class MeroFitter(Fitter):
         self.report[columns].plot(style='-o')
         plt.ylabel(ylabel)
         plt.xlabel(self.xlabel)
+        if "Equil" in ylabel:
+            plt.ticklabel_format(axis='y', style='sci', scilimits=(-2, 2))
         plt.savefig(f"{self.name}{os.path.sep}{self.name}-{name}.png")
