@@ -1,13 +1,12 @@
 {% extends "base.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
 
-{% block title %}SpectrAnalyzer{% endblock %}
+{% block title %}Deconvolute Me!{% endblock %}
 
 {% block page_content %}
 <div class="page-header">
-	<h1>Hello{% if name %}, {{ name }}{% endif %}!</h1>
+	<h1>Your file has been deconvoluted successfully!</h1>
 </div>
-<h2>Download analized results:</h2>
-
-<a href={{ url }}>Link</a>
+<p>Download analyzed results: <a href={{ url }}>Analyzed Results</a></p>
+<p><a href='/sendfile'>Send another file</a></p>
 {% endblock %}
