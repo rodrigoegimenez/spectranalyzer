@@ -9,4 +9,10 @@
 </div>
 <p>Download analyzed results: <a href={{ url }}>Analyzed Results</a></p>
 <p><a href='/sendfile'>Send another file</a></p>
+<h2>A preview of the results is shown below:</h2>
+{% for img in imgs %}
+ <p>
+    <img src="{{ img }}">
+ </p>
+{% endfor %}
 {% endblock %}

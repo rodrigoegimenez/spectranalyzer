@@ -7,7 +7,7 @@ import os
 # from ..models import User
 from spectranalyzer import LaurdanFitter
 from zipfile import ZipFile
-# from glob import glob
+from glob import glob
 
 
 @main.route('/')
@@ -37,7 +37,11 @@ def sendfile():
         zipfile.close()
         os.chdir("..")
         url = url_for('static', filename=f"{fitter.name}.zip")
-        return render_template('result.html', url=url)
+        imgs = []
+        for file in sorted(glob(f"{filepath}{fitter.name}/*.png")):
+            file = os.path.sep.join(file.split(os.path.sep)[-2:])
+            imgs.append(url_for('static', filename=file))
+        return render_template('result.html', url=url, imgs=imgs)
         # f"<a href={url}>link</a>"  # redirect(url_for('.index'))
     return render_template('sendfile.html', form=form)
 
