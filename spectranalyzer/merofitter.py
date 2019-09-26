@@ -27,7 +27,7 @@ class MeroFitter(Spectra):
     def __init__(self, title=None, ylabel=None, legend_title=None,
                  label_fun=None, xlabel=None):
         super().__init__(title, ylabel, legend_title, label_fun)
-        self.name = "MeroFitter"
+        self.name = title
         self.fits = []
         self.xlabel = xlabel
 
