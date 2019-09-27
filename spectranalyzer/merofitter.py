@@ -47,33 +47,38 @@ class MeroFitter(Spectra):
         data = np.append(areas, [vms, y0s])
         data = np.append(data, [equil])
         index = ["MonomerAgua", "DimerAgua",
-                 "VmRelaxed", "VmNonRelaxed",
-                 "y0Relaxed", "y0Nonrelaxed",
+                 "VmMonomer", "VmDimer",
+                 "y0Monomer", "y0Dimer",
                  "Equil"]
         return pd.Series(data=data, index=index, name=colname)
 
-    def fit_column(self, col, plot=False):
-        fitter = LNFitter(self.data[col], fittype="Mero")
-
-        # Maximum cannot be more than, well, the maximum value.
-        y0max = fitter.data.max().max()
-
+    def get_water_components(self, y0max, fixed=True):
         lnagua_monomero = LNFun()
         lnagua_monomero.name = "MonomeroAgua"
         lnagua_dimero = LNFun()
         lnagua_dimero.name = "DimeroAgua"
 
+        vary = not fixed
         lnagua_monomero.set_param('y0', value=y0max/2., min=0., max=y0max)
-        lnagua_monomero.set_param('vm', value=573, max=600, vary=False)
-        lnagua_monomero.set_param('vmin', value=554, vary=False)
-        lnagua_monomero.set_param('vmax', value=594, vary=False)
+        lnagua_monomero.set_param('vm', value=573, max=600, vary=vary)
+        lnagua_monomero.set_param('vmin', value=554, vary=vary)
+        lnagua_monomero.set_param('vmax', value=594, vary=vary)
 
         lnagua_dimero.set_param('y0', value=y0max/2., min=0., max=y0max)
         lnagua_dimero.set_param('vm', value=612, min=580,
-                                max=625, vary=False)
-        lnagua_dimero.set_param('vmin', value=594, vary=False)
-        lnagua_dimero.set_param('vmax', value=640, vary=False)
+                                max=625, vary=vary)
+        lnagua_dimero.set_param('vmin', value=594, vary=vary)
+        lnagua_dimero.set_param('vmax', value=640, vary=vary)
 
+        return lnagua_monomero, lnagua_dimero
+
+    def fit_column(self, col, plot=False, interphase=False):
+        fitter = LNFitter(self.data[col], fittype="Mero")
+
+        # Maximum cannot be more than, well, the maximum value.
+        y0max = fitter.data.max().max()
+
+        lnagua_monomero, lnagua_dimero = self.get_water_components(y0max)
         fitter.multiln.add_LN(lnagua_monomero)
         fitter.multiln.add_LN(lnagua_dimero)
 
@@ -86,11 +91,12 @@ class MeroFitter(Spectra):
         self.report = pd.concat([self.report, ser], axis=1, sort=False)
         self.fits.append(fitter)
 
-    def fit_all_columns(self, plot=False, export=False, write_images=False):
+    def fit_all_columns(self, plot=False, export=False, write_images=False,
+                        interphase=False):
         self.report = pd.DataFrame()
 
         for col in self.data.columns:
-            self.fit_column(col, plot)
+            self.fit_column(col, plot, interphase)
 
         self.report = self.report.transpose()
 
