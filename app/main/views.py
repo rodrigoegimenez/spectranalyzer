@@ -25,7 +25,8 @@ def sendfile():
         f = form.filefield.data
         filepath = (
             f"""{main.root_path}{os.path.sep}.."""
-            f"""{os.path.sep}static{os.path.sep}""")
+            f"""{os.path.sep}static{os.path.sep}"""
+            f"""uploaded{os.path.sep}""")
         filename = f"{secure_filename(f.filename)}"
         f.save(f"{filepath}{filename}")
         os.chdir(filepath)
@@ -40,7 +41,8 @@ def sendfile():
         imgs = []
         for file in sorted(glob(f"{filepath}{fitter.name}/*.png")):
             file = os.path.sep.join(file.split(os.path.sep)[-2:])
-            imgs.append(url_for('static', filename=file))
+            imgs.append(url_for('static',
+                                filename=f"uploaded{os.path.sep}{file}"))
         return render_template('result.html', url=url, imgs=imgs)
         # f"<a href={url}>link</a>"  # redirect(url_for('.index'))
     return render_template('sendfile.html', form=form)
