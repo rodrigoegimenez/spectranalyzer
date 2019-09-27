@@ -3,3 +3,4 @@ venv
 .vscode
 *pycache*
 *.swp
+app/static/uploaded
