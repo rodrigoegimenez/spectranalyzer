@@ -15,16 +15,22 @@
 
 from .lnfitter import LNFitter
 from .lnfun import LNFun
-from .fitter import Fitter
+#from .fitter import Fitter
+from .spectra import Spectra
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import os
 
 
-class LaurdanFitter(Fitter):
-    def __init__(self, filename, xlabel=None):
-        super().__init__(filename, xlabel)
+class LaurdanFitter(Spectra):
+    def __init__(self, title=None, ylabel=None, legend_title=None,
+                 label_fun=None, xlabel=None, fit_type="Bacalum"):
+        super().__init__(title, ylabel, legend_title, label_fun)
+        self.name = title
+        self.fits = []
+        self.xlabel = xlabel
+        self.fit_type = fit_type
 
     def create_column_report(self, fitter, colname):
         x = np.asarray(self.df.index)
@@ -77,7 +83,7 @@ class LaurdanFitter(Fitter):
     def fit_all_columns(self, plot=False, export=False, write_images=False):
         self.report = pd.DataFrame()
 
-        for col in self.df.columns:
+        for col in self.data.columns:
             self.fit_column(col, plot)
 
         self.report = self.report.transpose()
