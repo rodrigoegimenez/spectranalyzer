@@ -55,6 +55,9 @@ class Spectra():
         column.columns=labels
         return column
 
+    def load_csv_file(self, filename, encoding):
+        pass
+    
     def load_csv_data(self, wavelength: int, basedir=None, start=0.,
                       regex=None, encoding='iso-8859-1'):
         """Reads a series of fluorescence spectra from CSV files

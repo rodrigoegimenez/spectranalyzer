@@ -24,6 +24,9 @@ from .spectra import Spectra
 
 
 class Fitter(Spectra):
+    """The Fitter object allows the fitting of spectra using the specified functions.
+    The parameters it receives are sent to the Spectra super class.
+    """
     def __init__(self, title=None, ylabel=None, legend_title=None,
                  label_fun=None, xlabel=None):
         super().__init__(title, ylabel, legend_title, label_fun)

@@ -33,7 +33,7 @@ class LaurdanFitter(Spectra):
         self.fit_type = fit_type
 
     def create_column_report(self, fitter, colname):
-        x = np.asarray(self.df.index)
+        x = np.asarray(self.data.index)
         areas = []
         vms = []
         y0s = []
@@ -54,7 +54,7 @@ class LaurdanFitter(Spectra):
         return pd.Series(data=data, index=index, name=colname)
 
     def fit_column(self, col, plot=False):
-        fitter = LNFitter(self.df[col], fittype="Mero")
+        fitter = LNFitter(self.data[col], fittype="Mero")
 
         y0max = fitter.data.max().max()
         lnrelaxed = LNFun()
@@ -99,7 +99,7 @@ class LaurdanFitter(Spectra):
             pass
 
         for fit in self.fits:
-            fit.multiln.create_dataframe(np.asarray(self.df.index))
+            fit.multiln.create_dataframe(np.asarray(self.data.index))
             data = pd.concat([fit.multiln.df, fit.data], axis=1)
             data.to_csv(f"{self.name}{os.path.sep}{fit.data.name}.csv")
             data.plot()
