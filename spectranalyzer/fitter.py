@@ -55,7 +55,14 @@ class Fitter(Spectra):
                  "Equil"]
         return pd.Series(data=data, index=index, name=colname)
 
-    def fit_column(self, col, nfun=False, fitter=None, plot=False):
+    def fit_column(self, col, numln=False, fitter=None, plot=False):
+        if not fitter and not numln:
+            raise ValueError()
+        fitter = fitter
+
+        if not fitter:
+            fitter = LNFitter(self.data[col], numln=numln)
+
         fitter.fit(plot=plot)
         if plot:
             plt.title(f"{self.name} {col}")
@@ -65,12 +72,12 @@ class Fitter(Spectra):
         self.report = pd.concat([self.report, ser], axis=1, sort=False)
         self.fits.append(fitter)
 
-    def fit_all_columns(self, nfun=False, fitter=None, plot=False, export=False, 
-                        write_images=False, interphase=False):
+    def fit_all_columns(self, numln=False, fitter=None, plot=False, export=False, 
+                        write_images=False):
         self.report = pd.DataFrame()
 
         for col in self.data.columns:
-            self.fit_column(col, plot, interphase)
+            self.fit_column(col, numln=numln, fitter=fitter, plot=plot)
 
         self.report = self.report.transpose()
 
