@@ -27,8 +27,29 @@ class LNFitter():
         self.multiln = MultiLN()
         self.data = data
         self.fittype = fittype
-        for _ in range(numln):
-            self.multiln.add_LN(LNFun())
+        for i in range(numln):
+            fun = LNFun()
+
+            y0max = self.data.max()# /numln, vary=True, min=self.data.max()/4, max=self.data.max())
+            # vm = 0 # self.data.index.min() + (self.data.index.max() - self.data.index.min()) / (numln+1) * (i+1)
+            if i == 0:
+                fun.set_param('y0', value=y0max/2., min=0., max=y0max)
+                fun.set_param('vm', value=416)#, min=10**7/21300)
+                # vmin,vmax = fun.get_vmax_vmin(10**7/20000)
+                # fun.set_param('vmin', value=vmin)
+                # fun.set_param('vmax', value=vmax)
+            else:
+                fun.set_param('y0', value=y0max/2., min=0., max=y0max)
+                fun.set_param('vm', value=500)#, max=10**7/22300,
+                                    #min=10**7/26000)
+                #vmin,vmax = fun.get_vmax_vmin(10**7/2400)
+                #fun.set_param('vmin', value=vmin)
+                #fun.set_param('vmax', value=vmax)
+            #fun.set_param("vm", vm, vary=True)
+            #fun.set_param("vmin", vm - 10)
+            #fun.set_param("vmax", vm + 20)
+            fun.name = f"Component-{i}"
+            self.multiln.add_LN(fun)
 
     def extract_params_by_name(self, name):
         params = Parameters()
