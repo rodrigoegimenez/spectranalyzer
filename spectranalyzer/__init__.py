@@ -13,8 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with SpectrAnalyzer.  If not, see <https://www.gnu.org/licenses/>.
 
-#from .helpers import *
-#from .spectrabuilder import SpectraBuilder
+# from .helpers import *
+# from .spectrabuilder import SpectraBuilder
 
 from .lnfun import LNFun
 from .multiln import MultiLN
@@ -22,3 +22,4 @@ from .lnfitter import LNFitter
 from .laurdanfitter import LaurdanFitter
 from .merofitter import MeroFitter
 from .spectra import Spectra
+from .fitter import Fitter
