@@ -55,7 +55,6 @@ class Fitter(Spectra):
                  "Equil"]
         return pd.Series(data=data, index=index, name=colname)
 
-
     def fit_column(self, col, nfun=False, fitter=None, plot=False):
         fitter.fit(plot=plot)
         if plot:
