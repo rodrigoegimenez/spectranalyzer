@@ -55,8 +55,36 @@ class Spectra():
         column.columns=labels
         return column
 
-    def load_csv_file(self, filename, encoding):
-        pass
+    def load_csv_file(self, filename): # , encoding):
+        self.name = filename.replace(".csv",
+                                     "").replace(".xlsx",
+                                                 "").replace(".xls", "")
+        self.data = pd.read_csv(filename, index_col=0)
+        self.sanitize_data()
+    
+    def sanitize_data(self):
+        self.sanitize_columns()
+        self.sanitize_index()
+        self.data.replace(to_replace=",", value=".", regex=True, inplace=True)
+        self.data = self.data.apply(pd.to_numeric)
+        self.data.dropna(how='all', inplace=True)
+        self.data.dropna(how='all', axis=1, inplace=True)
+
+    def sanitize_columns(self):
+        newcols = []
+        for col in self.data.columns:
+            if type(col) is str and "," in col:
+                col = col.replace(",", ".")
+            newcols.append(float(col))
+        self.data.columns = newcols
+
+    def sanitize_index(self):
+        newidx = []
+        for idx in self.data.index:
+            if type(idx) is str and "," in idx:
+                idx = idx.replace(",", ".")
+            newidx.append(float(idx))
+        self.data.index = newidx
     
     def load_csv_data(self, wavelength: int, basedir=None, start=0.,
                       regex=None, encoding='iso-8859-1'):
