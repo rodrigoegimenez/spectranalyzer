@@ -126,7 +126,7 @@ class Spectra():
         return Spectra.nearest(self.data.index, wavelength)
 
     def plot_fixed_wavelength(self, wavelength, style=None):
-        """Plots the specified number (nearest value).
+        """Plots the specified wavelength (nearest value).
 
         :param wavelength:
         :param style:  (Default value = None)
@@ -159,10 +159,11 @@ class Spectra():
         self.data.plot(style=style)
         self.decorate_plot(style)
 
-    def decorate_plot(self, ylabel=None, style=None):
+    def decorate_plot(self, ylabel=None):
         """Sets plot title, ylabel and legend title.
 
-        :param style:  (Default value = None)
+        :param ylabel: if specified, changes the ylabel of the plot. 
+                       (Default value = None)
 
         """
         plt.legend(title = self.legend_title, frameon='none', edgecolor='none')
@@ -177,9 +178,10 @@ class Spectra():
         self.normdata = self.data.apply(fun)
 
     def plot_normalized(self, style=None):
-        """
+        """Plots the normalized data. If not normalized, it will aplly the default
+        normalization to the data.
 
-        :param style:  (Default value = None)
+        :param style: the style to use for the plot lines. (Default value = None)
 
         """
         if self.normdata is None:
@@ -192,7 +194,7 @@ class Spectra():
     def plot_maxima(self, style=None):
         """Plots the maximum wavelength vs. column.
 
-        :param style:  (Default value = None)
+        :param style: the style to use for the plot lines. (Default value = None)
 
         """
         maxima = self.data.idxmax()
