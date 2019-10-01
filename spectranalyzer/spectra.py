@@ -21,7 +21,16 @@ import re
 
 
 class Spectra():
-    """ """
+    """The Spectra object represents a collection of related spectra 
+    (spectra vs. concentration, vs. temperature, etc.).
+
+    :param title: Should describe the experiment performed.
+    :param ylabel: What does each point represent? Eg. Intensity (a.u)
+    :param legend_title: the title that will be used for the plot legends.
+    :param label_fun: The function that will be performed to each of the column
+                      names. Eg. to convert volume added to concentration. 
+                      The function must receive a number as parameter and return a number.
+     """
     def __init__(self, title=None, ylabel=None, legend_title=None,
             label_fun=None):
         self.title = title
@@ -32,39 +41,36 @@ class Spectra():
         self.label_fun = label_fun
 
     @staticmethod
-    def sanitize_columns(data, labels: list):
+    def sanitize_column(column, labels: list):
         """Converts to float all fields, eliminating non numeric values.
 
-        :param data: pandas
-        :param labels: list
-        :param labels: list:
-        :returns: pandas.DataFrame: Sanitized data
+        :param column: 
+        :param labels: 
+        :returns: pandas.DataFrame: Sanitized column
 
         """
-        data = data.apply(pd.to_numeric, errors='coerce')
-        data.dropna(inplace=True)
-        data.index = pd.to_numeric(data.index)
-        data.columns=labels
-        return data
-
-
-    def label_column(self, string, fun):
-        return fun(string)
+        column = column.apply(pd.to_numeric, errors='coerce')
+        column.dropna(inplace=True)
+        column.index = pd.to_numeric(column.index)
+        column.columns=labels
+        return column
 
     def load_csv_data(self, wavelength: int, basedir=None, start=0.,
                       regex=None, encoding='iso-8859-1'):
         """Reads a series of fluorescence spectra from CSV files
         (Exported from Cary Eclipse, for now.)
+        Naming convention: The files should be named as follows:
+        "Value Wavelength.csv"
+        where "Value" is the variable that is being changed (ie. concentration)
+        and "Wavelength" is the emission/excitation wavelength.
 
-        :param wavelength: The wavelength of excitation
+        :param wavelength: The wavelength of excitation/emission
         :param should: be specified in the filename
         :param basedir: The path to where the files are located (Default value = None)
         :param start: Which data should be dropped from importing (Default value = 0.)
         :param regex: Regular expression used to extract concentration (Default value = None)
-        :param encodig: In which encoding is the file
-        :param wavelength: int:
-        :param encoding:  (Default value = 'iso-8859-1')
-
+        :param encoding: the encoding of the csv data file to load. 
+                         (Default value = 'iso-8859-1')
         """
 
         self.data = pd.DataFrame()
@@ -86,7 +92,7 @@ class Spectra():
                 i = i + 1
                 conc = i
 
-            col = Spectra.sanitize_columns(pd.read_csv(file,encoding=encoding,index_col=0,header=1,
+            col = Spectra.sanitize_column(pd.read_csv(file,encoding=encoding,index_col=0,header=1,
                                   usecols=[0,1]), [conc])
             self.data = pd.concat((self.data,col), axis=1)
 
