@@ -35,16 +35,16 @@ class LNFitter():
             if i == 0:
                 fun.set_param('y0', value=y0max/2., min=0., max=y0max)
                 fun.set_param('vm', value=416)#, min=10**7/21300)
-                # vmin,vmax = fun.get_vmax_vmin(10**7/20000)
-                # fun.set_param('vmin', value=vmin)
-                # fun.set_param('vmax', value=vmax)
+                vmin,vmax = fun.get_vmax_vmin(416)
+                fun.set_param('vmin', value=vmin)
+                fun.set_param('vmax', value=vmax)
             else:
                 fun.set_param('y0', value=y0max/2., min=0., max=y0max)
                 fun.set_param('vm', value=500)#, max=10**7/22300,
                                     #min=10**7/26000)
-                #vmin,vmax = fun.get_vmax_vmin(10**7/2400)
-                #fun.set_param('vmin', value=vmin)
-                #fun.set_param('vmax', value=vmax)
+                vmin,vmax = fun.get_vmax_vmin(500)
+                fun.set_param('vmin', value=vmin)
+                fun.set_param('vmax', value=vmax)
             #fun.set_param("vm", vm, vary=True)
             #fun.set_param("vmin", vm - 10)
             #fun.set_param("vmax", vm + 20)
