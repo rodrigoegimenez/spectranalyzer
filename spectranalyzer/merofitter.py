@@ -31,27 +31,39 @@ class MeroFitter(Spectra):
         self.name = title
         self.fits = []
         self.xlabel = xlabel
+        self.report = pd.DataFrame()
 
     def create_column_report(self, fitter, colname):
         x = np.asarray(self.data.index)
         areas = []
         vms = []
         y0s = []
+        equil = []
+        index = []
         for fun in fitter.multiln.lnfuns:
             vms.append(fun.params["vm"].value)
             y0s.append(fun.params["y0"].value)
             areas.append(fun.calculate_area(x))
+            index.append(f"{fun.name}")
+            index.append(f"Vm{fun.name}")
+            index.append(f"y0{fun.name}")
         areas = np.asarray(areas)
         totarea = areas.sum()
         areas = areas / totarea * 100
-        equil = areas[1]/(areas[0])**2
+        # print(areas)
+        for i in range(0, len(areas), 2):
+            equil.append(areas[i+1]/(areas[i+0])**2)
+            index.append(f"Equil{i}")
         data = np.append(areas, [vms, y0s])
         data = np.append(data, [equil])
-        index = ["MonomerWater", "DimerWater",
-                 "VmMonomer", "VmDimer",
-                 "y0Monomer", "y0Dimer",
-                 "Equil"]
-        return pd.Series(data=data, index=index, name=colname)
+        # self.report_index  # ["MonomerWater", "DimerWater",
+        # "VmMonomer", "VmDimer",
+        # "y0Monomer", "y0Dimer",
+        # "Equil"]
+        # print(data, index)
+        ret = pd.Series(data=data, index=index, name=colname)
+        print(ret)
+        return ret
 
     def get_components(self, y0max, kind="Water", vary=False):
         param_mono = Parameters()
@@ -68,14 +80,14 @@ class MeroFitter(Spectra):
             param_dim.add('vmax', value=640, vary=vary)
         elif kind == "Phase":
             param_mono.add('y0', value=y0max/2., min=0., max=y0max)
-            param_mono.add('vm', value=580, max=600, vary=vary)
-            param_mono.add('vmin', value=554, vary=vary)
-            param_mono.add('vmax', value=594, vary=vary)
+            param_mono.add('vm', value=585, max=600, vary=False)
+            param_mono.add('vmin', value=572, vary=vary)
+            param_mono.add('vmax', value=596, vary=vary)
             param_dim.add('y0', value=y0max/2., min=0., max=y0max)
-            param_dim.add('vm', value=620, min=580,
-                          max=625, vary=vary)
-            param_dim.add('vmin', value=594, vary=vary)
-            param_dim.add('vmax', value=650, vary=vary)
+            param_dim.add('vm', value=626, min=580,
+                          max=625, vary=False)
+            param_dim.add('vmin', value=604, vary=vary)
+            param_dim.add('vmax', value=666, vary=vary)
 
         monomero = LNFun(param_mono)
         monomero.name = f"Monomer{kind}"
@@ -92,12 +104,13 @@ class MeroFitter(Spectra):
 
         lnagua_monomero, lnagua_dimero = self.get_components(y0max,
                                                              kind="Water")
+
         fitter.multiln.add_LN(lnagua_monomero)
         fitter.multiln.add_LN(lnagua_dimero)
-
         if interphase:
             lnphase_monomero, lnphase_dimero = self.get_components(
-                                               y0max, kind="Phase", vary=True)
+                                               y0max, kind="Phase")
+            # , vary=True)
             fitter.multiln.add_LN(lnphase_monomero)
             fitter.multiln.add_LN(lnphase_dimero)
 
@@ -149,11 +162,11 @@ class MeroFitter(Spectra):
         if write_images:
             self.write_report_graphic(["MonomerWater", "DimerWater"],
                                       "Rel. Area (%)", "RelArea")
-            self.write_report_graphic(["VmMonomer", "VmDimer"],
-                                      "Wavelength (nm)", "Vms")
-            self.write_report_graphic(["y0Monomer", "y0Dimer"],
-                                      "Max Intensity (a.u)", "y0s")
-            self.write_report_graphic(["Equil"], "Equil (a.u.)",
+            self.write_report_graphic(["MonomerPhase", "DimerPhase"],
+                                      "Rel. Area (%)", "RelArea")
+            # self.write_report_graphic(["y0Monomer", "y0Dimer"],
+            #                          "Max Intensity (a.u)", "y0s")
+            self.write_report_graphic(["Equil0", "Equil2"], "Equil (a.u.)",
                                       "Equil")
 
             if not plot:
