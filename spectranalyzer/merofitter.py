@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with SpectrAnalyzer.  If not, see <https://www.gnu.org/licenses/>.
 
+from lmfit import Parameters
 from .lnfitter import LNFitter
 from .lnfun import LNFun
 import matplotlib.pyplot as plt
@@ -46,31 +47,42 @@ class MeroFitter(Spectra):
         equil = areas[1]/(areas[0])**2
         data = np.append(areas, [vms, y0s])
         data = np.append(data, [equil])
-        index = ["MonomerAgua", "DimerAgua",
+        index = ["MonomerWater", "DimerWater",
                  "VmMonomer", "VmDimer",
                  "y0Monomer", "y0Dimer",
                  "Equil"]
         return pd.Series(data=data, index=index, name=colname)
 
-    def get_water_components(self, y0max, fixed=True):
-        lnagua_monomero = LNFun()
-        lnagua_monomero.name = "MonomeroAgua"
-        lnagua_dimero = LNFun()
-        lnagua_dimero.name = "DimeroAgua"
+    def get_components(self, y0max, kind="Water", vary=False):
+        param_mono = Parameters()
+        param_dim = Parameters()
+        if kind == "Water":
+            param_mono.add('y0', value=y0max/2., min=0., max=y0max)
+            param_mono.add('vm', value=573, max=600, vary=vary)
+            param_mono.add('vmin', value=554, vary=vary)
+            param_mono.add('vmax', value=594, vary=vary)
+            param_dim.add('y0', value=y0max/2., min=0., max=y0max)
+            param_dim.add('vm', value=612, min=580,
+                          max=625, vary=vary)
+            param_dim.add('vmin', value=594, vary=vary)
+            param_dim.add('vmax', value=640, vary=vary)
+        elif kind == "Phase":
+            param_mono.add('y0', value=y0max/2., min=0., max=y0max)
+            param_mono.add('vm', value=580, max=600, vary=vary)
+            param_mono.add('vmin', value=554, vary=vary)
+            param_mono.add('vmax', value=594, vary=vary)
+            param_dim.add('y0', value=y0max/2., min=0., max=y0max)
+            param_dim.add('vm', value=620, min=580,
+                          max=625, vary=vary)
+            param_dim.add('vmin', value=594, vary=vary)
+            param_dim.add('vmax', value=650, vary=vary)
 
-        vary = not fixed
-        lnagua_monomero.set_param('y0', value=y0max/2., min=0., max=y0max)
-        lnagua_monomero.set_param('vm', value=573, max=600, vary=vary)
-        lnagua_monomero.set_param('vmin', value=554, vary=vary)
-        lnagua_monomero.set_param('vmax', value=594, vary=vary)
+        monomero = LNFun(param_mono)
+        monomero.name = f"Monomer{kind}"
+        dimero = LNFun(param_dim)
+        dimero.name = f"Dimer{kind}"
 
-        lnagua_dimero.set_param('y0', value=y0max/2., min=0., max=y0max)
-        lnagua_dimero.set_param('vm', value=612, min=580,
-                                max=625, vary=vary)
-        lnagua_dimero.set_param('vmin', value=594, vary=vary)
-        lnagua_dimero.set_param('vmax', value=640, vary=vary)
-
-        return lnagua_monomero, lnagua_dimero
+        return monomero, dimero
 
     def fit_column(self, col, plot=False, interphase=False):
         fitter = LNFitter(self.data[col], fittype="Mero")
@@ -78,9 +90,16 @@ class MeroFitter(Spectra):
         # Maximum cannot be more than, well, the maximum value.
         y0max = fitter.data.max().max()
 
-        lnagua_monomero, lnagua_dimero = self.get_water_components(y0max)
+        lnagua_monomero, lnagua_dimero = self.get_components(y0max,
+                                                             kind="Water")
         fitter.multiln.add_LN(lnagua_monomero)
         fitter.multiln.add_LN(lnagua_dimero)
+
+        if interphase:
+            lnphase_monomero, lnphase_dimero = self.get_components(
+                                               y0max, kind="Phase", vary=True)
+            fitter.multiln.add_LN(lnphase_monomero)
+            fitter.multiln.add_LN(lnphase_dimero)
 
         fitter.fit(plot=plot)
         if plot:
@@ -128,11 +147,11 @@ class MeroFitter(Spectra):
 
         self.report.to_csv(f"{self.name}{os.path.sep}{self.name}-report.csv")
         if write_images:
-            self.write_report_graphic(["MonomerAgua", "DimerAgua"],
+            self.write_report_graphic(["MonomerWater", "DimerWater"],
                                       "Rel. Area (%)", "RelArea")
-            self.write_report_graphic(["VmRelaxed", "VmNonRelaxed"],
+            self.write_report_graphic(["VmMonomer", "VmDimer"],
                                       "Wavelength (nm)", "Vms")
-            self.write_report_graphic(["y0Relaxed", "y0Nonrelaxed"],
+            self.write_report_graphic(["y0Monomer", "y0Dimer"],
                                       "Max Intensity (a.u)", "y0s")
             self.write_report_graphic(["Equil"], "Equil (a.u.)",
                                       "Equil")
