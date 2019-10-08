@@ -18,21 +18,23 @@ import matplotlib.pyplot as plt
 import numpy as np
 from glob import glob
 import re
+from scipy.interpolate import interp1d
 
 
 class Spectra():
-    """The Spectra object represents a collection of related spectra 
+    """The Spectra object represents a collection of related spectra
     (spectra vs. concentration, vs. temperature, etc.).
 
     :param title: Should describe the experiment performed.
     :param ylabel: What does each point represent? Eg. Intensity (a.u)
     :param legend_title: the title that will be used for the plot legends.
     :param label_fun: The function that will be performed to each of the column
-                      names. Eg. to convert volume added to concentration. 
-                      The function must receive a number as parameter and return a number.
+                      names. Eg. to convert volume added to concentration.
+                      The function must receive a number as parameter and
+                      return a number.
      """
     def __init__(self, title=None, ylabel=None, legend_title=None,
-            label_fun=None):
+                 label_fun=None):
         self.title = title
         self.ylabel = ylabel
         self.legend_title = legend_title
@@ -44,24 +46,24 @@ class Spectra():
     def sanitize_column(column, labels: list):
         """Converts to float all fields, eliminating non numeric values.
 
-        :param column: 
-        :param labels: 
+        :param column:
+        :param labels:
         :returns: pandas.DataFrame: Sanitized column
 
         """
         column = column.apply(pd.to_numeric, errors='coerce')
         column.dropna(inplace=True)
         column.index = pd.to_numeric(column.index)
-        column.columns=labels
+        column.columns = labels
         return column
 
-    def load_csv_file(self, filename): # , encoding):
+    def load_csv_file(self, filename):  # , encoding):
         self.name = filename.replace(".csv",
                                      "").replace(".xlsx",
                                                  "").replace(".xls", "")
         self.data = pd.read_csv(filename, index_col=0)
         self.sanitize_data()
-    
+
     def sanitize_data(self):
         self.sanitize_columns()
         self.sanitize_index()
@@ -85,7 +87,7 @@ class Spectra():
                 idx = idx.replace(",", ".")
             newidx.append(float(idx))
         self.data.index = newidx
-    
+
     def load_csv_data(self, wavelength: int, basedir=None, start=0.,
                       regex=None, encoding='iso-8859-1'):
         """Reads a series of fluorescence spectra from CSV files
@@ -97,10 +99,13 @@ class Spectra():
 
         :param wavelength: The wavelength of excitation/emission
         :param should: be specified in the filename
-        :param basedir: The path to where the files are located (Default value = None)
-        :param start: Which data should be dropped from importing (Default value = 0.)
-        :param regex: Regular expression used to extract concentration (Default value = None)
-        :param encoding: the encoding of the csv data file to load. 
+        :param basedir: The path to where the files are located
+                        (Default value = None)
+        :param start: Which data should be dropped from importing
+                      (Default value = 0.)
+        :param regex: Regular expression used to extract concentration
+                      (Default value = None)
+        :param encoding: the encoding of the csv data file to load.
                          (Default value = 'iso-8859-1')
         """
 
@@ -113,7 +118,7 @@ class Spectra():
                 conc = re.findall(regex, file)[0]
                 if self.label_fun is None:
                     conc = float(conc)
-                    conc = round(conc*22/(2000+conc),2)
+                    conc = round(conc*22 / (2000+conc), 2)
                 else:
                     conc = self.label_fun(conc)
 
@@ -123,9 +128,11 @@ class Spectra():
                 i = i + 1
                 conc = i
 
-            col = Spectra.sanitize_column(pd.read_csv(file,encoding=encoding,index_col=0,header=1,
-                                  usecols=[0,1]), [conc])
-            self.data = pd.concat((self.data,col), axis=1)
+            col = Spectra.sanitize_column(pd.read_csv(file,
+                                                      encoding=encoding,
+                                                      index_col=0, header=1,
+                                                      usecols=[0, 1]), [conc])
+            self.data = pd.concat((self.data, col), axis=1)
 
         self.data.sort_index(axis=1, inplace=True)
 
@@ -193,26 +200,26 @@ class Spectra():
     def decorate_plot(self, ylabel=None):
         """Sets plot title, ylabel and legend title.
 
-        :param ylabel: if specified, changes the ylabel of the plot. 
+        :param ylabel: if specified, changes the ylabel of the plot.
                        (Default value = None)
 
         """
-        plt.legend(title = self.legend_title, frameon='none', edgecolor='none')
+        plt.legend(title=self.legend_title, frameon='none', edgecolor='none')
         plt.title(self.title)
         if ylabel is None:
             ylabel = self.ylabel
         plt.ylabel(ylabel)
-
 
     def normalize_data(self, fun=lambda x: x/max(x)):
         """Normalizes the data applying the specified lambda."""
         self.normdata = self.data.apply(fun)
 
     def plot_normalized(self, style=None):
-        """Plots the normalized data. If not normalized, it will aplly the default
-        normalization to the data.
+        """Plots the normalized data. If not normalized, it will aplly the
+        default normalization to the data.
 
-        :param style: the style to use for the plot lines. (Default value = None)
+        :param style: the style to use for the plot lines.
+                      (Default value = None)
 
         """
         if self.normdata is None:
@@ -225,9 +232,18 @@ class Spectra():
     def plot_maxima(self, style=None):
         """Plots the maximum wavelength vs. column.
 
-        :param style: the style to use for the plot lines. (Default value = None)
+        :param style: the style to use for the plot lines.
+                      (Default value = None)
 
         """
         maxima = self.data.idxmax()
         maxima.plot(style=style)
         self.decorate_plot()
+
+    def substract_blank(self, blank):
+        # if not np.array_equal(self.data, blank.data):
+        #    interpolate = True
+        for i in range(len(self.data.columns)):
+            f = interp1d(blank.data.index, blank.data.iloc[:, i], kind='cubic')
+            self.data.iloc[:, i] = self.data.iloc[:, i] - f(self.data.index)
+            # blank.data.iloc[:, i]
