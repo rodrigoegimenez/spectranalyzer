@@ -35,35 +35,25 @@ class MeroFitter(Spectra):
 
     def create_column_report(self, fitter, colname):
         x = np.asarray(self.data.index)
+        data = pd.Series(name=colname)
+        totarea = 0
         areas = []
-        vms = []
-        y0s = []
-        equil = []
-        index = []
         for fun in fitter.multiln.lnfuns:
-            vms.append(fun.params["vm"].value)
-            y0s.append(fun.params["y0"].value)
-            areas.append(fun.calculate_area(x))
-            index.append(f"{fun.name}")
-            index.append(f"Vm{fun.name}")
-            index.append(f"y0{fun.name}")
-        areas = np.asarray(areas)
-        totarea = areas.sum()
-        areas = areas / totarea * 100
-        # print(areas)
+            data[f"{fun.name}"] = fun.calculate_area(x)
+            areas.append(f"{fun.name}")
+            totarea = totarea + data[f"{fun.name}"]
+            data[f"Vm{fun.name}"] = fun.params["vm"].value
+            data[f"y0{fun.name}"] = fun.params["y0"].value
+        for area in areas:
+            data[area] = data[area] / totarea * 100
         for i in range(0, len(areas), 2):
-            equil.append(areas[i+1]/(areas[i+0])**2)
-            index.append(f"Equil{i}")
-        data = np.append(areas, [vms, y0s])
-        data = np.append(data, [equil])
+            data[f"Equil{i}"] = data[areas[i+1]]/(data[areas[i+0]])**2
         # self.report_index  # ["MonomerWater", "DimerWater",
         # "VmMonomer", "VmDimer",
         # "y0Monomer", "y0Dimer",
         # "Equil"]
-        # print(data, index)
-        ret = pd.Series(data=data, index=index, name=colname)
-        print(ret)
-        return ret
+        print(data)
+        return data
 
     def get_components(self, y0max, kind="Water", vary=False):
         param_mono = Parameters()
@@ -160,10 +150,11 @@ class MeroFitter(Spectra):
 
         self.report.to_csv(f"{self.name}{os.path.sep}{self.name}-report.csv")
         if write_images:
-            self.write_report_graphic(["MonomerWater", "DimerWater"],
+            self.write_report_graphic(["MonomerWater", "DimerWater",
+                                       "MonomerPhase", "DimerPhase"],
                                       "Rel. Area (%)", "RelArea")
-            self.write_report_graphic(["MonomerPhase", "DimerPhase"],
-                                      "Rel. Area (%)", "RelArea")
+            # self.write_report_graphic(["MonomerPhase", "DimerPhase"],
+            #                          "Rel. Area (%)", "RelArea2")
             # self.write_report_graphic(["y0Monomer", "y0Dimer"],
             #                          "Max Intensity (a.u)", "y0s")
             self.write_report_graphic(["Equil0", "Equil2"], "Equil (a.u.)",
@@ -176,6 +167,8 @@ class MeroFitter(Spectra):
         self.report[columns].plot(style='-o')
         plt.ylabel(ylabel)
         plt.xlabel(self.xlabel)
+        plt.legend(loc='best')
+        plt.title(f"{self.name}-{name}")
         if "Equil" in ylabel:
             plt.ticklabel_format(axis='y', style='sci', scilimits=(-2, 2))
         plt.savefig(f"{self.name}{os.path.sep}{self.name}-{name}.png")
