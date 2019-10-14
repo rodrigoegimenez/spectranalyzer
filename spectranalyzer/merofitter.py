@@ -48,11 +48,6 @@ class MeroFitter(Spectra):
             data[area] = data[area] / totarea * 100
         for i in range(0, len(areas), 2):
             data[f"Equil{i}"] = data[areas[i+1]]/(data[areas[i+0]])**2
-        # self.report_index  # ["MonomerWater", "DimerWater",
-        # "VmMonomer", "VmDimer",
-        # "y0Monomer", "y0Dimer",
-        # "Equil"]
-        print(data)
         return data
 
     def get_components(self, y0max, kind="Water", vary=False):
@@ -136,7 +131,8 @@ class MeroFitter(Spectra):
             fit.multiln.create_dataframe(np.asarray(self.data.index))
             data = pd.concat([fit.multiln.df, fit.data], axis=1)
             data.to_csv(f"{self.name}{os.path.sep}{fit.data.name}.csv")
-            data.plot()
+            # data.plot()
+            fit.plot()
             plt.xlabel("Wavelength (nm)")
             plt.ylabel("Intensity (a.u.)")
             plt.savefig(f"{self.name}{os.path.sep}{fit.data.name}.png")
@@ -150,15 +146,17 @@ class MeroFitter(Spectra):
 
         self.report.to_csv(f"{self.name}{os.path.sep}{self.name}-report.csv")
         if write_images:
-            self.write_report_graphic(["MonomerWater", "DimerWater",
-                                       "MonomerPhase", "DimerPhase"],
-                                      "Rel. Area (%)", "RelArea")
-            # self.write_report_graphic(["MonomerPhase", "DimerPhase"],
-            #                          "Rel. Area (%)", "RelArea2")
-            # self.write_report_graphic(["y0Monomer", "y0Dimer"],
-            #                          "Max Intensity (a.u)", "y0s")
-            self.write_report_graphic(["Equil0", "Equil2"], "Equil (a.u.)",
-                                      "Equil")
+            if "MonomerPhase" in self.report.columns:
+                self.write_report_graphic(["MonomerWater", "DimerWater",
+                                          "MonomerPhase", "DimerPhase"],
+                                          "Rel. Area (%)", "RelArea")
+                self.write_report_graphic(["Equil0", "Equil2"], "Equil (a.u.)",
+                                          "Equil")
+
+            else:
+                self.write_report_graphic(["MonomerWater", "DimerWater"],
+                                          "Rel. Area (%)", "RelArea")
+                self.write_report_graphic(["Equil0"], "Equil (a.u.)", "Equil")
 
             if not plot:
                 plt.close('all')
