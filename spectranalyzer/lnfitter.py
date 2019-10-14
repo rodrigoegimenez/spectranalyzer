@@ -30,24 +30,25 @@ class LNFitter():
         for i in range(numln):
             fun = LNFun()
 
-            y0max = self.data.max() # /numln, vary=True, min=self.data.max()/4, max=self.data.max())
-            # vm = 0 # self.data.index.min() + (self.data.index.max() - self.data.index.min()) / (numln+1) * (i+1)
+            y0max = self.data.max()
+            # /numln, vary=True, min=self.data.max()/4, max=self.data.max())
+            # vm = 0 # self.data.index.min() + (self.data.index.max()
+            # - self.data.index.min()) / (numln+1) * (i+1)
             if i == 0:
                 fun.set_param('y0', value=y0max/2., min=0., max=y0max)
-                fun.set_param('vm', value=416)#, min=10**7/21300)
+                fun.set_param('vm', value=416)  # , min=10**7/21300)
                 vmin, vmax = fun.get_vmax_vmin(416)
                 fun.set_param('vmin', value=vmin)
                 fun.set_param('vmax', value=vmax)
             else:
                 fun.set_param('y0', value=y0max/2., min=0., max=y0max)
-                fun.set_param('vm', value=500)#, max=10**7/22300,
-                                    #min=10**7/26000)
-                vmin,vmax = fun.get_vmax_vmin(500)
+                fun.set_param('vm', value=500)  # , max=10**7/22300,
+                vmin, vmax = fun.get_vmax_vmin(500)
                 fun.set_param('vmin', value=vmin)
                 fun.set_param('vmax', value=vmax)
-            #fun.set_param("vm", vm, vary=True)
-            #fun.set_param("vmin", vm - 10)
-            #fun.set_param("vmax", vm + 20)
+            # fun.set_param("vm", vm, vary=True)
+            # fun.set_param("vmin", vm - 10)
+            # fun.set_param("vmax", vm + 20)
             fun.name = f"Component-{i}"
             self.multiln.add_LN(fun)
 
@@ -97,6 +98,10 @@ class LNFitter():
         self.out = minimize(self.residual, self.params, args=(x, y),
                             nan_policy='omit')
         if plot:
-            self.multiln.plot(x)
-            self.data.plot(style=':', linewidth=3, label="Data")
-            plt.legend()
+            self.plot()
+
+    def plot(self):
+        x = np.asarray(self.data.index)
+        self.multiln.plot(x)
+        self.data.plot(style=':', linewidth=3, label="Data")
+        plt.legend()
