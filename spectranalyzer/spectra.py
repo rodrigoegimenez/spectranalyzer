@@ -42,8 +42,7 @@ class Spectra():
         self.normdata = None
         self.label_fun = label_fun
 
-    @staticmethod
-    def sanitize_column(column, labels: list):
+    def add_column(self, column, labels: list):
         """Converts to float all fields, eliminating non numeric values.
 
         :param column:
@@ -55,14 +54,16 @@ class Spectra():
         column.dropna(inplace=True)
         column.index = pd.to_numeric(column.index)
         column.columns = labels
-        return column
+        self.data = pd.concat((self.data, column), axis=1)
 
-    def load_csv_file(self, filename):  # , encoding):
-        self.name = filename.replace(".csv",
-                                     "").replace(".xlsx",
-                                                 "").replace(".xls", "")
-        self.data = pd.read_csv(filename, index_col=0)
-        self.sanitize_data()
+    def add_spectrum(self, filename, labels, **kwargs):
+        # if type(filename) is str:
+        #    self.name = filename.replace(".csv",
+        #                                 "").replace(".xlsx",
+        #                                             "").replace(".xls", "")
+	# self.data = pd.read_csv(filename, **kwargs)
+        # self.sanitize_data()
+        self.add_column(pd.read_csv(filename, **kwargs), labels)
 
     def sanitize_data(self):
         self.sanitize_columns()
@@ -128,11 +129,12 @@ class Spectra():
                 i = i + 1
                 conc = i
 
-            col = Spectra.sanitize_column(pd.read_csv(file,
-                                                      encoding=encoding,
-                                                      index_col=0, header=1,
-                                                      usecols=[0, 1]), [conc])
-            self.data = pd.concat((self.data, col), axis=1)
+            self.add_spectrum(file, labels = [conc], encoding=encoding, index_col=0, header=1, usecols=[0,1])
+            # col = Spectra.sanitize_column(pd.read_csv(file,
+            #                                          encoding=encoding,
+            #                                          index_col=0, header=1,
+            #                                          usecols=[0, 1]), [conc])
+            # self.data = pd.concat((self.data, col), axis=1)
 
         self.data.sort_index(axis=1, inplace=True)
 
