@@ -45,7 +45,7 @@ class MeroFitter(Spectra):
             data[f"Vm{fun.name}"] = fun.params["vm"].value
             data[f"y0{fun.name}"] = fun.params["y0"].value
         for area in areas:
-            data[area] = data[area] / totarea * 100
+            data[f"{area}norm"] = data[area] / totarea * 100
         for i in range(0, len(areas), 2):
             data[f"Equil{i}"] = data[areas[i+1]]/(data[areas[i+0]])**2
         return data
@@ -146,17 +146,23 @@ class MeroFitter(Spectra):
 
         self.report.to_csv(f"{self.name}{os.path.sep}{self.name}-report.csv")
         if write_images:
+            columnsarea = []
+            columnsequil = []
             if "MonomerPhase" in self.report.columns:
-                self.write_report_graphic(["MonomerWater", "DimerWater",
-                                          "MonomerPhase", "DimerPhase"],
-                                          "Rel. Area (%)", "RelArea")
-                self.write_report_graphic(["Equil0", "Equil2"], "Equil (a.u.)",
-                                          "Equil")
-
+                columnsarea = ["MonomerWater", "DimerWater",
+                               "MonomerPhase", "DimerPhase"]
+                columnsequil = ["Equil0", "Equil2"]
             else:
-                self.write_report_graphic(["MonomerWater", "DimerWater"],
-                                          "Rel. Area (%)", "RelArea")
-                self.write_report_graphic(["Equil0"], "Equil (a.u.)", "Equil")
+                columnsarea = ["MonomerWater", "DimerWater"]
+                columnsequil = ["Equil0"]
+
+            self.write_report_graphic(columnsarea, "Area (a.u.)", "Area")
+            normcols = []
+            for col in columnsarea:
+                normcols.append(f"{col}norm")
+            self.write_report_graphic(normcols, "Rel Area (%)", "RelArea")
+
+            self.write_report_graphic(columnsequil, "Equil (a.u.)", "Equil")
 
             if not plot:
                 plt.close('all')
