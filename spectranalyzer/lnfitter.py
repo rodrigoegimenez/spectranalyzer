@@ -65,7 +65,6 @@ class LNFitter():
                 pname = 'vmax'
             else:
                 continue
-
             params.add(pname, value=self.params[param].value,
                        min=self.params[param].min,
                        max=self.params[param].max)
