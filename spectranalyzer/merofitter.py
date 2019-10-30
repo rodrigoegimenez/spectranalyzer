@@ -47,7 +47,8 @@ class MeroFitter(Spectra):
             data[f"y0{fun.name}"] = fun.params["y0"].value
         for area in areas:
             data[f"{area}norm"] = data[area] / totarea * 100
-        data[f"Equil0"] = data[areas[1]]/(data[areas[2]])**2
+        data[f"EquilDim"] = data["DimerPhase"]/(data["MonomerPhase"])**2
+        data[f"EquilMem"] = data["MonomerPhase"]/data["Water"]
         return data
 
     def get_components(self, y0max, kind="Water", vary=True):
@@ -152,7 +153,7 @@ class MeroFitter(Spectra):
             if "MonomerPhase" in self.report.columns:
                 columnsarea = ["Water",
                                "MonomerPhase", "DimerPhase"]
-                columnsequil = ["Equil0"]
+                columnsequil = ["EquilDim", "EquilMem"]
             else:
                 columnsarea = ["MonomerWater", "DimerWater"]
                 columnsequil = ["Equil0"]
@@ -172,7 +173,7 @@ class MeroFitter(Spectra):
         self.report[columns].plot(style='-o')
         plt.ylabel(ylabel)
         if "Rel" in ylabel:
-            plt.ylim(0,100)
+            plt.ylim(0, 100)
         plt.xlabel(self.xlabel)
         plt.legend(loc='best')
         plt.title(f"{self.name}-{name}")
