@@ -16,6 +16,7 @@
 from lmfit import Parameters
 from .lnfitter import LNFitter
 from .lnfun import LNFun
+from .water import WaterLN
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -46,11 +47,10 @@ class MeroFitter(Spectra):
             data[f"y0{fun.name}"] = fun.params["y0"].value
         for area in areas:
             data[f"{area}norm"] = data[area] / totarea * 100
-        for i in range(0, len(areas), 2):
-            data[f"Equil{i}"] = data[areas[i+1]]/(data[areas[i+0]])**2
+        data[f"Equil0"] = data[areas[1]]/(data[areas[2]])**2
         return data
 
-    def get_components(self, y0max, kind="Water", vary=False):
+    def get_components(self, y0max, kind="Water", vary=True):
         param_mono = Parameters()
         param_dim = Parameters()
         if kind == "Water":
@@ -65,12 +65,12 @@ class MeroFitter(Spectra):
             param_dim.add('vmax', value=640, vary=vary)
         elif kind == "Phase":
             param_mono.add('y0', value=y0max/2., min=0., max=y0max)
-            param_mono.add('vm', value=585, max=600, vary=False)
+            param_mono.add('vm', value=585, max=600, vary=True)
             param_mono.add('vmin', value=572, vary=vary)
             param_mono.add('vmax', value=596, vary=vary)
             param_dim.add('y0', value=y0max/2., min=0., max=y0max)
             param_dim.add('vm', value=626, min=580,
-                          max=625, vary=False)
+                          max=625, vary=True)
             param_dim.add('vmin', value=604, vary=vary)
             param_dim.add('vmax', value=666, vary=vary)
 
@@ -87,17 +87,18 @@ class MeroFitter(Spectra):
         # Maximum cannot be more than, well, the maximum value.
         y0max = fitter.data.max().max()
 
-        lnagua_monomero, lnagua_dimero = self.get_components(y0max,
-                                                             kind="Water")
-
-        fitter.multiln.add_LN(lnagua_monomero)
-        fitter.multiln.add_LN(lnagua_dimero)
         if interphase:
+            fitter.multiln.add_LN(WaterLN())
             lnphase_monomero, lnphase_dimero = self.get_components(
                                                y0max, kind="Phase")
             # , vary=True)
             fitter.multiln.add_LN(lnphase_monomero)
             fitter.multiln.add_LN(lnphase_dimero)
+        else:
+            lnagua_monomero, lnagua_dimero = self.get_components(y0max,
+                                                                 kind="Water")
+            fitter.multiln.add_LN(lnagua_monomero)
+            fitter.multiln.add_LN(lnagua_dimero)
 
         fitter.fit(plot=plot)
         if plot:
@@ -149,9 +150,9 @@ class MeroFitter(Spectra):
             columnsarea = []
             columnsequil = []
             if "MonomerPhase" in self.report.columns:
-                columnsarea = ["MonomerWater", "DimerWater",
+                columnsarea = ["Water",
                                "MonomerPhase", "DimerPhase"]
-                columnsequil = ["Equil0", "Equil2"]
+                columnsequil = ["Equil0"]
             else:
                 columnsarea = ["MonomerWater", "DimerWater"]
                 columnsequil = ["Equil0"]
@@ -170,6 +171,8 @@ class MeroFitter(Spectra):
     def write_report_graphic(self, columns, ylabel, name):
         self.report[columns].plot(style='-o')
         plt.ylabel(ylabel)
+        if "Rel" in ylabel:
+            plt.ylim(0,100)
         plt.xlabel(self.xlabel)
         plt.legend(loc='best')
         plt.title(f"{self.name}-{name}")
