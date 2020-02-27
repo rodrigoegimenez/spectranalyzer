@@ -23,7 +23,7 @@ class Fitter():
     
     def load_data_from_json(self, data):
         df = pd.DataFrame()
-        for item in json.loads(data):
+        for item in data:
             df = df.append(pd.Series(index=item['x'], data=item['y'], name=item['name']),)
         self.df = df.transpose()
 
