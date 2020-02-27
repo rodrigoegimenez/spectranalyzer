@@ -26,6 +26,7 @@ class LNFitter():
         self.paramkeys = []
         self.multiln = MultiLN()
         self.data = data
+        self.jsondata = None
         self.fittype = fittype
         for _ in range(numln):
             self.multiln.add_LN(LNFun())
@@ -79,3 +80,23 @@ class LNFitter():
             self.multiln.plot(x)
             self.data.plot(style=':', linewidth=3, label="Data")
             plt.legend()
+
+    def create_json_data(self):
+        curve = {
+            'x': self.data.index.values.tolist(),
+            'y': self.data.values.tolist(),
+            'name': str(self.data.name)
+        }
+
+        jsondata = [curve,]
+        for col in self.multiln.df:
+            x = self.multiln.df[col].index.values.tolist()
+            y = self.multiln.df[col].values.tolist()
+            name = str(self.multiln.df[col].name)
+            curve = {
+                'x': x,
+                'y': y,
+                'name': str(name)
+            } 
+            jsondata.append(curve)
+        self.jsondata = jsondata

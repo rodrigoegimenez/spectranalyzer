@@ -23,8 +23,8 @@ import os
 
 
 class LaurdanFitter(Fitter):
-    def __init__(self, filename, xlabel=None):
-        super().__init__(filename, xlabel)
+    def __init__(self):
+        super().__init__()
 
     def create_column_report(self, fitter, colname):
         x = np.asarray(self.df.index)
@@ -70,6 +70,7 @@ class LaurdanFitter(Fitter):
             plt.title(f"{self.name} {col}")
             plt.show()
 
+        fitter.create_json_data()
         ser = self.create_column_report(fitter, col)
         self.report = pd.concat([self.report, ser], axis=1, sort=False)
         self.fits.append(fitter)
@@ -82,9 +83,16 @@ class LaurdanFitter(Fitter):
 
         self.report = self.report.transpose()
 
+        self.create_json_data()
+
         if export:
             self.export_fits(write_images)
             self.write_report(plot, write_images)
+    
+    def create_json_data(self):
+        self.jsondata = []
+        for fit in self.fits:
+            self.jsondata.append(fit.jsondata)
 
     def export_fits(self, write_images=False):
         try:

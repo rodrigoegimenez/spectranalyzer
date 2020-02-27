@@ -14,11 +14,20 @@
 # along with SpectrAnalyzer.  If not, see <https://www.gnu.org/licenses/>.
 
 import pandas as pd
-
+import json
 
 class Fitter():
-    def __init__(self, filename, xlabel=None):
+    def __init__(self, name="Fitter"):
         self.fits = []
+        self.name = name
+    
+    def load_data_from_json(self, data):
+        df = pd.DataFrame()
+        for item in json.loads(data):
+            df = df.append(pd.Series(index=item['x'], data=item['y'], name=item['name']),)
+        self.df = df.transpose()
+
+    def load_file(self, filename, xlabel=None):
         self.name = filename.replace(".csv",
                                      "").replace(".xlsx",
                                                  "").replace(".xls", "")
