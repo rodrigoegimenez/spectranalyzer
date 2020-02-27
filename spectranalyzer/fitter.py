@@ -14,7 +14,6 @@
 # along with SpectrAnalyzer.  If not, see <https://www.gnu.org/licenses/>.
 
 import pandas as pd
-import json
 
 class Fitter():
     def __init__(self, name="Fitter"):
