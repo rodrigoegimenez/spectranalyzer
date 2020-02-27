@@ -3,3 +3,5 @@ venv
 .vscode
 *pycache*
 *.swp
+static
+*ipynb*
