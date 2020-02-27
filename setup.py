@@ -5,4 +5,4 @@ setup(name='SpectrAnalyzer',
       description='Perform Analysis and Fitting of Spectra',
       author='Rodrigo E. Gimenez',
       packages=['spectranalyzer'],
-      install_requires=['lmfit','matplotlib'])
+      install_requires=['lmfit','matplotlib','pandas'])
