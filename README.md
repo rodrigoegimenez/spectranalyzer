@@ -13,7 +13,7 @@ SpectrAnalyzer is a library (and a web application) that helps deconvolute fluor
 TODO: instructions on how to install and use the library.
 
 ### Webapp
-The webapp can be currently accessed at the following url: https://deconvoluteme-webapp.herokuapp.com/
+The webapp can be currently accessed at the following url: https://deconvolute.me/
 
 ## What is implemented
 Currently the only module working is for the deconvolution of the components of Laurdan 
