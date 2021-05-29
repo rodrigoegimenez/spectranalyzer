@@ -1,0 +1,15 @@
+.navbar-nav-svg {
+	width: 1.5rem;
+	height: 1.5rem;
+}
+footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+	padding: 1.5rem;
+	background-color: #222;
+	color: #9d9d9d;
+}
+footer a {
+	color: #9d9d9d;
+}

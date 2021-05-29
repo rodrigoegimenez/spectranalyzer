@@ -22,16 +22,24 @@ import os
 # from .fitter import Fitter
 from .spectra import Spectra
 
-
-class Fitter(Spectra):
-    """The Fitter object allows the fitting of spectra using the specified functions.
-    The parameters it receives are sent to the Spectra super class.
-    """
-    def __init__(self, title=None, ylabel=None, legend_title=None,
-                 label_fun=None, xlabel=None):
-        super().__init__(title, ylabel, legend_title, label_fun)
-        self.name = title
+class Fitter():
+    def __init__(self, name="Fitter"):
         self.fits = []
+        self.name = name
+    
+    def load_data_from_json(self, data):
+        df = pd.DataFrame()
+        for item in data:
+            df = df.append(pd.Series(index=item['x'], data=item['y'], name=item['name']),)
+        self.df = df.transpose()
+
+    def load_file(self, filename, xlabel=None):
+        self.name = filename.replace(".csv",
+                                     "").replace(".xlsx",
+                                                 "").replace(".xls", "")
+        self.df = pd.read_csv(filename, index_col=0)
+        self.sanitize_data()
+        self.report = pd.DataFrame()
         self.xlabel = xlabel
 
     def create_column_report(self, fitter, colname):
