@@ -6,7 +6,7 @@ pipeline {
         COMMIT = "${env.GIT_COMMIT}"
     }
     stages {
-        stage('Deploy landing page') {
+        stage('Deploy app') {
             when {
                 branch 'spectranalyzer2'
             }
