@@ -8,7 +8,7 @@ pipeline {
     stages {
         stage('Deploy app') {
             when {
-                branch 'spectranalyzer2'
+                branch 'main'
             }
             steps {
                 sh 'docker build . -t deconvolute-me'
